@@ -1,0 +1,101 @@
+﻿@page "/books/create"
+@using Microsoft.EntityFrameworkCore
+@using lybrariebookshop.Models
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Book</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Book" OnValidSubmit="AddBook" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="authorid" class="form-label">AuthorId:</label> 
+                
+                <InputSelect id="author" @bind-Value="Book.AuthorId" class="form-control">
+                    @foreach (var author in Authors)
+                    {
+                        <option value="@author.Id">@author.UserName</option>
+                    }
+                </InputSelect>
+
+
+
+                <ValidationMessage For="() => Book.AuthorId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="genreid" class="form-label">GenreId:</label>
+                <InputSelect id="genre" @bind-Value="Book.GenreId" class="form-control">
+                    @foreach (var genre in Genres)
+                    {
+                        <option value="@genre.Id">@genre.Name</option>
+                    }
+                </InputSelect>
+
+                <ValidationMessage For="() => Book.GenreId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label> 
+                <InputText id="title" @bind-Value="Book.Title" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Book.Title" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="year" class="form-label">Year:</label> 
+                <InputText id="year" @bind-Value="Book.Year" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Book.Year" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="isbn" class="form-label">Isbn:</label> 
+                <InputText id="isbn" @bind-Value="Book.Isbn" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Book.Isbn" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createdate" class="form-label">CreateDate:</label> 
+                <InputDate id="createdate" @bind-Value="Book.CreateDate" class="form-control" /> 
+                <ValidationMessage For="() => Book.CreateDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="modifydate" class="form-label">ModifyDate:</label> 
+                <InputDate id="modifydate" @bind-Value="Book.ModifyDate" class="form-control" /> 
+                <ValidationMessage For="() => Book.ModifyDate" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/books">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+
+    private Book Book { get; set; } = new();
+
+    private List<Author> Authors { get; set; } = new();
+    private List<Genre> Genres { get; set; } = new();
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        Authors = await context.Author.ToListAsync();
+        Genres = await context.Genre.ToListAsync();
+    }
+
+    
+    private async Task AddBook()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Book.Add(Book);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/books");
+    }
+}

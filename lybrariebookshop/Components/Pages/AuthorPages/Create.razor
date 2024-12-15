@@ -1,0 +1,64 @@
+﻿@page "/authors/create"
+@using Microsoft.EntityFrameworkCore
+@using lybrariebookshop.Models
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Author</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Author" OnValidSubmit="AddAuthor" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="firstname" class="form-label">FirstName:</label> 
+                <InputText id="firstname" @bind-Value="Author.FirstName" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Author.FirstName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="lastname" class="form-label">LastName:</label> 
+                <InputText id="lastname" @bind-Value="Author.LastName" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Author.LastName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="username" class="form-label">UserName:</label> 
+                <InputText id="username" @bind-Value="Author.UserName" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Author.UserName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createdate" class="form-label">CreateDate:</label> 
+                <InputDate id="createdate" @bind-Value="Author.CreateDate" class="form-control" /> 
+                <ValidationMessage For="() => Author.CreateDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="modifydate" class="form-label">ModifyDate:</label> 
+                <InputDate id="modifydate" @bind-Value="Author.ModifyDate" class="form-control" /> 
+                <ValidationMessage For="() => Author.ModifyDate" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/authors">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Author Author { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddAuthor()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Author.Add(Author);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/authors");
+    }
+}

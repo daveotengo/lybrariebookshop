@@ -1,0 +1,59 @@
+﻿@page "/genres/create"
+@using Microsoft.EntityFrameworkCore
+@using lybrariebookshop.Models
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Genre</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Genre" OnValidSubmit="AddGenre" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="Genre.Name" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Genre.Name" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="description" class="form-label">Description:</label> 
+                <InputText id="description" @bind-Value="Genre.Description" class="form-control" /> 
+                <ValidationMessage For="() => Genre.Description" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createdate" class="form-label">CreateDate:</label> 
+                <InputDate id="createdate" @bind-Value="Genre.CreateDate" class="form-control" /> 
+                <ValidationMessage For="() => Genre.CreateDate" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="modifydate" class="form-label">ModifyDate:</label> 
+                <InputDate id="modifydate" @bind-Value="Genre.ModifyDate" class="form-control" /> 
+                <ValidationMessage For="() => Genre.ModifyDate" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/genres">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Genre Genre { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddGenre()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Genre.Add(Genre);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/genres");
+    }
+}

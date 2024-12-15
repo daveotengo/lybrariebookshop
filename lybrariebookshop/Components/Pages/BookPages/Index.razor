@@ -1,0 +1,49 @@
+﻿@page "/books"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using lybrariebookshop.Models
+@using lybrariebookshop.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="books/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="BooksWithDetails">
+    <PropertyColumn Property="book => book.Author.UserName" Title="Author" />
+    <PropertyColumn Property="book => book.Genre.Name" Title="Genre" />
+    <PropertyColumn Property="book => book.Title" />
+    <PropertyColumn Property="book => book.Year" />
+    <PropertyColumn Property="book => book.Isbn" />
+    <PropertyColumn Property="book => book.CreateDate" />
+    <PropertyColumn Property="book => book.ModifyDate" />
+
+    <TemplateColumn Context="book">
+        <a href="@($"books/edit?id={book.Id}")">Edit</a> |
+        <a href="@($"books/details?id={book.Id}")">Details</a> |
+        <a href="@($"books/delete?id={book.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private lybrariebookshopContext context = default!;
+    private IQueryable<Book> BooksWithDetails = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+
+        // Include related Author and Genre data
+        BooksWithDetails = context.Book
+            .Include(b => b.Author)
+            .Include(b => b.Genre);
+    }
+
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

@@ -1,0 +1,133 @@
+﻿@page "/books/edit"
+@using Microsoft.EntityFrameworkCore
+@using lybrariebookshop.Models
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Book</h2>
+<hr />
+@if (Book is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Book" OnValidSubmit="UpdateBook" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Book.Id" value="@Book.Id" />
+                <div class="mb-3">
+                    <label for="authorid" class="form-label">AuthorId:</label>
+                    <InputSelect id="author" @bind-Value="Book.AuthorId" class="form-control">
+                        @foreach (var author in Authors)
+                        {
+                            <option value="@author.Id">@author.UserName</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Book.AuthorId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="genreid" class="form-label">GenreId:</label>
+                    <InputSelect id="genre" @bind-Value="Book.GenreId" class="form-control">
+                        @foreach (var genre in Genres)
+                        {
+                            <option value="@genre.Id">@genre.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Book.GenreId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title:</label>
+                    <InputText id="title" @bind-Value="Book.Title" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Book.Title" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="year" class="form-label">Year:</label>
+                    <InputText id="year" @bind-Value="Book.Year" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Book.Year" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="isbn" class="form-label">Isbn:</label>
+                    <InputText id="isbn" @bind-Value="Book.Isbn" class="form-control" aria-required="true"/>
+                    <ValidationMessage For="() => Book.Isbn" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="createdate" class="form-label">CreateDate:</label>
+                    <InputDate id="createdate" @bind-Value="Book.CreateDate" class="form-control" />
+                    <ValidationMessage For="() => Book.CreateDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="modifydate" class="form-label">ModifyDate:</label>
+                    <InputDate id="modifydate" @bind-Value="Book.ModifyDate" class="form-control" />
+                    <ValidationMessage For="() => Book.ModifyDate" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/books">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private long Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Book? Book { get; set; }
+    private List<Author> Authors { get; set; } = new List<Author>();
+    private List<Genre> Genres { get; set; } = new List<Genre>();
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Book ??= await context.Book.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Book is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        Authors = await context.Author.ToListAsync();
+        Genres = await context.Genre.ToListAsync();
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateBook()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Book!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!BookExists(Book!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/books");
+    }
+
+    private bool BookExists(long id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Book.Any(e => e.Id == id);
+    }
+}

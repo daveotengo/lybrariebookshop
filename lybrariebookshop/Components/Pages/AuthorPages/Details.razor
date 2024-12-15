@@ -1,0 +1,54 @@
+﻿@page "/authors/details"
+@using Microsoft.EntityFrameworkCore
+@using lybrariebookshop.Models
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Author</h2>
+    <hr />
+    @if (author is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">FirstName</dt>
+            <dd class="col-sm-10">@author.FirstName</dd>
+            <dt class="col-sm-2">LastName</dt>
+            <dd class="col-sm-10">@author.LastName</dd>
+            <dt class="col-sm-2">UserName</dt>
+            <dd class="col-sm-10">@author.UserName</dd>
+            <dt class="col-sm-2">CreateDate</dt>
+            <dd class="col-sm-10">@author.CreateDate</dd>
+            <dt class="col-sm-2">ModifyDate</dt>
+            <dd class="col-sm-10">@author.ModifyDate</dd>
+        </dl>
+        <div>
+            <a href="@($"/authors/edit?id={author.Id}")">Edit</a> |
+            <a href="@($"/authors")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Author? author;
+
+    [SupplyParameterFromQuery]
+    private long Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        author = await context.Author.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (author is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

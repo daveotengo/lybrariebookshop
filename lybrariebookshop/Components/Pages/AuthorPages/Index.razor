@@ -1,0 +1,40 @@
+﻿@page "/authors"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using lybrariebookshop.Models
+@using lybrariebookshop.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<lybrariebookshop.Data.lybrariebookshopContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="authors/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Author">
+    <PropertyColumn Property="author => author.FirstName" />
+    <PropertyColumn Property="author => author.LastName" />
+    <PropertyColumn Property="author => author.UserName" />
+    <PropertyColumn Property="author => author.CreateDate" />
+    <PropertyColumn Property="author => author.ModifyDate" />
+
+    <TemplateColumn Context="author">
+        <a href="@($"authors/edit?id={author.Id}")">Edit</a> |
+        <a href="@($"authors/details?id={author.Id}")">Details</a> |
+        <a href="@($"authors/delete?id={author.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private lybrariebookshopContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
